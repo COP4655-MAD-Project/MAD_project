@@ -1,0 +1,40 @@
+-------------------------Capstone Project Ideas Template-------------------------
+
+### Team Member Name:
+
+### Project Title:
+
+### Project Overview:
+- Brief Description of the App Idea:
+- What is the main purpose of the app?
+
+### Features:
+1. Required Features:
+   - List the essential features that must be included in the app.
+   - 
+   - 
+   - 
+
+2. Optional Features:
+- List additional features that could enhance the app but are not necessary.
+- 
+- 
+- 
+
+### Target Audience:
+- Who are the intended users of this app?
+- Describe the demographics, interests, and needs of the target audience.
+
+### Screen Layout:
+- Main Screens:
+- List the main screens needed for the app and a brief description of each.
+- 
+- 
+- 
+
+### Navigation Flow:
+- How will users navigate through the app?
+- Describe the user journey and how they will move from one screen to another.
+
+### Additional Notes:
+- Any other ideas, inspirations, or resources that might be useful for this project.
