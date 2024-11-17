@@ -69,14 +69,15 @@ Planorama is an event planning app that makes organizing social gatherings seaml
 
 ## Wireframes
 
+![WhatsApp Image 2024-11-12 at 20 41 19](https://github.com/user-attachments/assets/5addc2a5-d496-4dc8-a152-e15c9ca64421)
+![WhatsApp Image 2024-11-12 at 20 41 19 (2)](https://github.com/user-attachments/assets/a4c7349b-8a7e-4a2b-8374-2d0f0a7fd0c2)
+![WhatsApp Image 2024-11-12 at 20 41 19 (1)](https://github.com/user-attachments/assets/52a7aa78-3fd4-45ff-9777-de3a3267697e)
+![WhatsApp Image 2024-11-12 at 20 41 18](https://github.com/user-attachments/assets/2a370d7b-d481-43a8-9709-1e709952fb13)
+![WhatsApp Image 2024-11-12 at 20 41 18 (3)](https://github.com/user-attachments/assets/0933b9ff-bc62-4558-a31e-14ed26a091bd)
+![WhatsApp Image 2024-11-12 at 20 41 18 (2)](https://github.com/user-attachments/assets/eb1e3051-e898-4ebd-8c88-c07019c48522)
+![WhatsApp Image 2024-11-12 at 20 41 18 (1)](https://github.com/user-attachments/assets/22a55671-f698-4133-8754-6acf0ac308b2)
 
-![PHOTO-2024-11-12-19-41-19 (1)](https://hackmd.io/_uploads/HJYSwpGG1g.jpg)
-![PHOTO-2024-11-12-19-41-19 (2)](https://hackmd.io/_uploads/HJFSv6MMJx.jpg)
-![PHOTO-2024-11-12-19-41-18 (3)](https://hackmd.io/_uploads/HyKBw6ffke.jpg)
-![PHOTO-2024-11-12-19-41-19](https://hackmd.io/_uploads/By9HwTfM1g.jpg)
-![PHOTO-2024-11-12-19-41-18 (1)](https://hackmd.io/_uploads/Hy9rwaGz1g.jpg)
-![PHOTO-2024-11-12-19-41-18 (2)](https://hackmd.io/_uploads/r1cSPTfGke.jpg)
-![PHOTO-2024-11-12-19-41-18](https://hackmd.io/_uploads/Hy9HvpzfJe.jpg)
+
 
 
 ---
