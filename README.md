@@ -116,4 +116,4 @@ Planorama is an event planning app that makes organizing social gatherings seaml
 Unit 8 completed user stories:
 <img width="1083" alt="Screenshot 2024-11-17 at 3 02 30 PM" src="https://github.com/user-attachments/assets/c75fdee5-5810-4704-99b8-5b1b61d213f2">
 Unit 8 demo:
-![Imgur Image](https://imgur.com/bdtFuKa)
+[Imgur](https://imgur.com/bdtFuKa)
