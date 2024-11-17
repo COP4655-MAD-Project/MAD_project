@@ -108,3 +108,9 @@ Planorama is an event planning app that makes organizing social gatherings seaml
 - **[PUT]** /events/:id - Update event details (e.g., guest list, dietary restrictions)
 - **[GET]** /weather - Retrieve weather forecast based on event location and date
 - **[POST]** /musicQueue - Add a song to the event’s music queue
+
+---
+
+### Unit 8 Deliverables
+
+<img width="1083" alt="Screenshot 2024-11-17 at 3 02 30 PM" src="https://github.com/user-attachments/assets/c75fdee5-5810-4704-99b8-5b1b61d213f2">
