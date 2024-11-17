@@ -56,7 +56,7 @@ Planorama is an event planning app that makes organizing social gatherings seaml
 
 #### Tab Navigation (Tab to Screen)
 - **Home Feed** - Event dashboard and overview
-- **Event Planning** - Create and edit event details
+- **Event Planning** - Create and edit event details [COMPLETE]
 - **Weather** - Check weather for the event day
 - **Music Queue** - Add songs for the party playlist
 
@@ -113,4 +113,5 @@ Planorama is an event planning app that makes organizing social gatherings seaml
 
 ### Unit 8 Deliverables
 
+Unit 8 completed user stories:
 <img width="1083" alt="Screenshot 2024-11-17 at 3 02 30 PM" src="https://github.com/user-attachments/assets/c75fdee5-5810-4704-99b8-5b1b61d213f2">
