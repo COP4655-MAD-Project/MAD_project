@@ -1,8 +1,9 @@
 # Planorama
 
 # Video
-[
-](https://www.loom.com/share/bbda82b559e3480c98270f096e587972?sid=cb26fbe6-271c-44ed-979b-3e641c4a2c76)
+
+[(https://www.loom.com/share/bbda82b559e3480c98270f096e587972?sid=cb26fbe6-271c-44ed-979b-3e641c4a2c76)]
+
 ## Table of Contents
 1. [Overview](#overview)
 2. [Product Spec](#product-spec)
