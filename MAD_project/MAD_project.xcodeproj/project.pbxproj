@@ -9,12 +9,10 @@
 /* Begin PBXBuildFile section */
 		8F36E9162CE6DD82000EF42C /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 8F36E9152CE6DD82000EF42C /* FirebaseFirestore */; };
 		8F36E9182CE6DD85000EF42C /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 8F36E9172CE6DD85000EF42C /* FirebaseAuth */; };
-		AABC594E2CC0B1A600E31073 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = AABC594D2CC0B1A600E31073 /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		AABC593C2CC0AF2D00E31073 /* MAD_project.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAD_project.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		AABC594D2CC0B1A600E31073 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -48,7 +46,6 @@
 		AABC59332CC0AF2D00E31073 = {
 			isa = PBXGroup;
 			children = (
-				AABC594D2CC0B1A600E31073 /* README.md */,
 				AABC593E2CC0AF2D00E31073 /* MAD_project */,
 				8F36E9142CE6DD82000EF42C /* Frameworks */,
 				AABC593D2CC0AF2D00E31073 /* Products */,
@@ -132,7 +129,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AABC594E2CC0B1A600E31073 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -276,6 +272,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"MAD_project/Preview Content\"";
+				DEVELOPMENT_TEAM = 6VZX82BNG6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -304,6 +301,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"MAD_project/Preview Content\"";
+				DEVELOPMENT_TEAM = 6VZX82BNG6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
