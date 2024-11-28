@@ -1,22 +1,17 @@
-//
-//  LogIn.swift
-//  GroupProject1
-//
-//  Created by Cristian De Francesco on 11/14/24.
-//
-
 import SwiftUI
 
 struct LogInView: View {
-    @Environment(AuthManager.self) var authManager
+    @EnvironmentObject var authManager: AuthManager
     @State private var email: String = ""
     @State private var password: String = ""
+    @State private var errorMessage: String?
 
     var body: some View {
         NavigationStack {
             ZStack {
                 LinearGradient(gradient: Gradient(colors: [Color(red: 0.96, green: 0.87, blue: 0.68), Color.brown]), startPoint: .top, endPoint: .bottom)
                     .edgesIgnoringSafeArea(.all)
+
                 VStack {
                     Text("Planorama")
                         .font(.system(size: 60, weight: .regular, design: .serif))
@@ -58,14 +53,27 @@ struct LogInView: View {
                         }
 
                         Button("Login") {
-                            print("Login user: \(email), \(password)")
-                            authManager.signIn(email: email, password: password)
+                            errorMessage = nil
+                            authManager.signIn(email: email, password: password) { result in
+                                switch result {
+                                case .success:
+                                    print("Login successful!")
+                                case .failure(let error):
+                                    errorMessage = error.localizedDescription
+                                }
+                            }
                         }
                         .font(.headline)
                         .padding()
                         .background(Color.blue)
                         .foregroundColor(.white)
                         .cornerRadius(10)
+                    }
+
+                    if let errorMessage = errorMessage {
+                        Text(errorMessage)
+                            .foregroundColor(.red)
+                            .padding()
                     }
                 }
             }
@@ -75,6 +83,5 @@ struct LogInView: View {
 
 #Preview {
     LogInView()
-        .environment(AuthManager())
+        .environmentObject(AuthManager())
 }
-
