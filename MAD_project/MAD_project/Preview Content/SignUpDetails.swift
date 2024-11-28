@@ -1,4 +1,3 @@
-//
 //  SignUpDetails.swift
 //  GroupProject1
 //
@@ -7,7 +6,7 @@
 import SwiftUI
 
 struct SignUpDetailsView: View {
-    @Environment(AuthManager.self) var authManager
+    @EnvironmentObject var authManager: AuthManager
     
     @State private var name: String = ""
     @State private var email: String = ""
@@ -75,42 +74,42 @@ struct SignUpDetailsView: View {
             Spacer()
             
             Button("Submit") {
-                            // Clear the error message before trying to sign up
-                            errorMessage = nil
+                // Clear the error message before trying to sign up
+                errorMessage = nil
 
-                            // authenticates the user and signs them up
-                            authManager.signUp(email: email, password: password, name: name, eventType: selectedEventType, eventDate: eventDate) { result in
-                                switch result {
-                                case .success():
-                                    print("Sign-up successful!")
-                                case .failure(let error):// If sign-up fails, display the error message
-                                    errorMessage = (error as NSError).localizedDescription
-                                }
-                            }
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .padding([.bottom, .top], 20)
-                        .frame(maxWidth: .infinity)
-
-                        // Display error message if any
-                        if let errorMessage = errorMessage {
-                            Text(errorMessage)
-                                .foregroundColor(.red)
-                                .padding()
-                                .background(Color.white)
-                                .cornerRadius(8)
-                                .padding()
-                        }
+                // authenticates the user and signs them up
+                authManager.signUp(email: email, password: password, name: name, eventType: selectedEventType, eventDate: eventDate) { result in
+                    switch result {
+                    case .success():
+                        print("Sign-up successful!")
+                    case .failure(let error): // If sign-up fails, display the error message
+                        errorMessage = (error as NSError).localizedDescription
                     }
-                    .padding()
-                    .background(LinearGradient(gradient: Gradient(colors: [Color(red: 0.96, green: 0.87, blue: 0.68), Color.brown]), startPoint: .top, endPoint: .bottom))
-                    .edgesIgnoringSafeArea(.all)
                 }
             }
+            .buttonStyle(.borderedProminent)
+            .padding([.bottom, .top], 20)
+            .frame(maxWidth: .infinity)
+
+            // Display error message if any
+            if let errorMessage = errorMessage {
+                Text(errorMessage)
+                    .foregroundColor(.red)
+                    .padding()
+                    .background(Color.white)
+                    .cornerRadius(8)
+                    .padding()
+            }
+        }
+        .padding()
+        .background(LinearGradient(gradient: Gradient(colors: [Color(red: 0.96, green: 0.87, blue: 0.68), Color.brown]), startPoint: .top, endPoint: .bottom))
+        .edgesIgnoringSafeArea(.all)
+    }
+}
 
 struct SignUpDetailsView_Previews: PreviewProvider {
     static var previews: some View {
         SignUpDetailsView()
-            .environment(AuthManager())
+            .environmentObject(AuthManager()) // Inject AuthManager into the environment
     }
 }

@@ -8,9 +8,10 @@
 import SwiftUI
 
 struct LogInView: View {
-    @Environment(AuthManager.self) var authManager
+    @EnvironmentObject var authManager: AuthManager
     @State private var email: String = ""
     @State private var password: String = ""
+    @State private var navigateToHome: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -58,8 +59,8 @@ struct LogInView: View {
                         }
 
                         Button("Login") {
-                            print("Login user: \(email), \(password)")
                             authManager.signIn(email: email, password: password)
+                            navigateToHome = true
                         }
                         .font(.headline)
                         .padding()
@@ -67,14 +68,18 @@ struct LogInView: View {
                         .foregroundColor(.white)
                         .cornerRadius(10)
                     }
+                    .padding()
+                    
+                    NavigationLink(value: navigateToHome) {
+                        EmptyView()
+                    }
+                    .navigationDestination(for: Bool.self) { value in
+                        if value {
+                            CalendarView()
+                        }
+                    }
                 }
             }
         }
     }
 }
-
-#Preview {
-    LogInView()
-        .environment(AuthManager())
-}
-

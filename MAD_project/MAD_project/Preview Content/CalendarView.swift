@@ -13,7 +13,11 @@ struct CalendarView: View {
 
     var body: some View {
         ZStack {
+<<<<<<< Updated upstream
             // Background gradient
+=======
+          
+>>>>>>> Stashed changes
             LinearGradient(
                 gradient: Gradient(colors: [Color(red: 0.96, green: 0.87, blue: 0.68), Color.brown]),
                 startPoint: .top,
@@ -22,7 +26,11 @@ struct CalendarView: View {
             .edgesIgnoringSafeArea(.all)
 
             VStack {
+<<<<<<< Updated upstream
                 // Calendar View
+=======
+               
+>>>>>>> Stashed changes
                 DatePicker(
                     "Select a date",
                     selection: $selectedDate,
@@ -40,7 +48,11 @@ struct CalendarView: View {
                     loadEvents(for: newDate)
                 }
 
+<<<<<<< Updated upstream
                 // Events View
+=======
+              
+>>>>>>> Stashed changes
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Events")
                         .font(.headline)
@@ -85,9 +97,15 @@ struct CalendarView: View {
             }
         }
         .onAppear {
+<<<<<<< Updated upstream
             loadEvents(for: selectedDate) // Load events for the initial date
         }
         .navigationTitle("Calendar View")
+=======
+            loadEvents(for: selectedDate)
+        }
+        .navigationTitle("Mark Your Dates!")
+>>>>>>> Stashed changes
     }
 
     func loadEvents(for date: Date) {
