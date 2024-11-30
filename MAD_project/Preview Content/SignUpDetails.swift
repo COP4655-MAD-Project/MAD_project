@@ -1,110 +1,109 @@
 import SwiftUI
 
 struct SignUpDetailsView: View {
-    @EnvironmentObject var authManager: AuthManager // Inject AuthManager as an environment object
+    @EnvironmentObject var authManager: AuthManager
 
     @State private var name: String = ""
     @State private var email: String = ""
     @State private var password: String = ""
-    @State private var selectedEventType: String = "Birthday"
-    @State private var eventDate: Date = Date()
-
-    @State private var errorMessage: String? // To display any errors
-
-    let eventTypes = ["Birthday", "Wedding", "Meeting", "Conference", "Party"]
+    @State private var errorMessage: String?
 
     var body: some View {
-        VStack {
-            Text("Enter Your Event Details")
-                .font(.largeTitle)
-                .padding(.top, 100)
-                .frame(maxWidth: .infinity, alignment: .center)
+        ZStack {
+            GradientBackground()
 
-            VStack(alignment: .leading) {
-                TextField("Enter your name", text: $name)
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(10)
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.black, lineWidth: 2))
-                    .foregroundColor(.black)
+            VStack(spacing: 20) {
+                // Branding
+                Text("Planorama")
+                    .font(.system(size: 50, weight: .bold, design: .serif))
+                    .italic()
+                    .foregroundColor(.white)
+                    .padding(.bottom, 30)
 
-                TextField("Enter your email", text: $email)
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(10)
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.black, lineWidth: 2))
-                    .keyboardType(.emailAddress)
-                    .foregroundColor(.black)
+                // Form Fields
+                VStack(spacing: 15) {
+                    TextField("Name", text: $name)
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(8)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                        )
 
-                SecureField("Enter your password", text: $password)
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(10)
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.black, lineWidth: 2))
-                    .foregroundColor(.black)
+                    TextField("Email", text: $email)
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(8)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                        )
+                        .keyboardType(.emailAddress)
 
-                Picker("Select event type", selection: $selectedEventType) {
-                    ForEach(eventTypes, id: \.self) { event in
-                        Text(event)
+                    SecureField("Password", text: $password)
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(8)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                        )
+                }
+                .padding(.horizontal, 30)
+
+                // Submit Button
+                Button(action: {
+                    errorMessage = nil
+                    authManager.signUp(
+                        email: email,
+                        password: password,
+                        name: name,
+                        eventType: "N/A",
+                        eventDate: Date()
+                    ) { result in
+                        switch result {
+                        case .success:
+                            print("Sign-up successful!")
+                        case .failure(let error):
+                            errorMessage = error.localizedDescription
+                        }
+                    }
+                }) {
+                    Text("Sign Up")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.brown)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                }
+                .padding(.horizontal, 30)
+
+                // Error Message
+                if let errorMessage = errorMessage {
+                    Text(errorMessage)
+                        .font(.footnote)
+                        .foregroundColor(.red)
+                        .padding()
+                }
+
+                // Navigation to Log In
+                Spacer()
+                HStack {
+                    Text("Already have an account?")
+                        .foregroundColor(.white)
+                    NavigationLink(destination: LogInView()) {
+                        Text("Log In")
+                            .foregroundColor(.brown)
+                            .fontWeight(.bold)
                     }
                 }
-                .pickerStyle(MenuPickerStyle())
-                .padding()
-                .background(Color.white)
-                .cornerRadius(10)
-                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.black, lineWidth: 2))
+                .padding(.top, 10)
 
-                DatePicker("Select event date", selection: $eventDate, displayedComponents: .date)
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(10)
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.black, lineWidth: 2))
-            }
-            .padding()
-
-            Spacer()
-
-            Button("Submit") {
-                errorMessage = nil
-                // Call the `signUp` method in `AuthManager`
-                authManager.signUp(
-                    email: email,
-                    password: password,
-                    name: name,
-                    eventType: selectedEventType,
-                    eventDate: eventDate
-                ) { result in
-                    switch result {
-                    case .success:
-                        print("Sign-up successful!")
-                    case .failure(let error):
-                        errorMessage = error.localizedDescription
-                    }
-                }
-            }
-            .buttonStyle(.borderedProminent)
-            .padding([.bottom, .top], 20)
-            .frame(maxWidth: .infinity)
-
-            // Display error message if it exists
-            if let errorMessage = errorMessage {
-                Text(errorMessage)
-                    .foregroundColor(.red)
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(8)
-                    .padding()
+                Spacer()
             }
         }
-        .padding()
-        .background(
-            LinearGradient(
-                gradient: Gradient(colors: [Color(red: 0.96, green: 0.87, blue: 0.68), Color.brown]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        )
-        .edgesIgnoringSafeArea(.all)
     }
 }
 
@@ -112,3 +111,26 @@ struct SignUpDetailsView: View {
     SignUpDetailsView()
         .environmentObject(AuthManager())
 }
+
+    
+    
+    /*
+    Picker("Select event type", selection: $selectedEventType) {
+        ForEach(eventTypes, id: \.self) { event in
+            Text(event)
+        }
+    }
+    .pickerStyle(MenuPickerStyle())
+    .padding()
+    .background(Color.white)
+    .cornerRadius(10)
+    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.black, lineWidth: 2))
+
+    DatePicker("Select event date", selection: $eventDate, displayedComponents: .date)
+        .padding()
+        .background(Color.white)
+        .cornerRadius(10)
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.black, lineWidth: 2))
+}
+.padding()
+*/

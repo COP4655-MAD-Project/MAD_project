@@ -7,74 +7,85 @@ struct LogInView: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        NavigationStack {
+        NavigationStack { // Ensure the view is wrapped in a NavigationStack
             ZStack {
-                LinearGradient(gradient: Gradient(colors: [Color(red: 0.96, green: 0.87, blue: 0.68), Color.brown]), startPoint: .top, endPoint: .bottom)
-                    .edgesIgnoringSafeArea(.all)
+                GradientBackground()
 
-                VStack {
+                VStack(spacing: 20) {
+                    // Branding
                     Text("Planorama")
-                        .font(.system(size: 60, weight: .regular, design: .serif))
+                        .font(.system(size: 50, weight: .bold, design: .serif))
                         .italic()
-                        .font(.largeTitle)
+                        .foregroundColor(.white)
+                        .padding(.bottom, 30)
 
-                    VStack {
+                    // Login Form
+                    VStack(spacing: 15) {
                         TextField("Email", text: $email)
                             .padding()
                             .background(Color.white)
-                            .cornerRadius(10)
+                            .cornerRadius(8)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.black, lineWidth: 2)
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.gray.opacity(0.5), lineWidth: 1)
                             )
-                            .foregroundColor(.black)
+                            .keyboardType(.emailAddress)
 
                         SecureField("Password", text: $password)
                             .padding()
                             .background(Color.white)
-                            .cornerRadius(10)
+                            .cornerRadius(8)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.black, lineWidth: 2)
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.gray.opacity(0.5), lineWidth: 1)
                             )
-                            .foregroundColor(.black)
                     }
-                    .textInputAutocapitalization(.never)
-                    .padding(40)
+                    .padding(.horizontal, 30)
 
-                    HStack {
-                        NavigationLink(destination: SignUpDetailsView()) {
-                            Text("Sign Up")
-                                .font(.headline)
-                                .padding()
-                                .background(Color.green)
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
-                        }
-
-                        Button("Login") {
-                            errorMessage = nil
-                            authManager.signIn(email: email, password: password) { result in
-                                switch result {
-                                case .success:
-                                    print("Login successful!")
-                                case .failure(let error):
-                                    errorMessage = error.localizedDescription
-                                }
+                    // Login Button
+                    Button(action: {
+                        errorMessage = nil
+                        authManager.signIn(email: email, password: password) { result in
+                            switch result {
+                            case .success:
+                                print("Login successful!")
+                            case .failure(let error):
+                                errorMessage = error.localizedDescription
                             }
                         }
-                        .font(.headline)
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+                    }) {
+                        Text("Log In")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.brown)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
                     }
+                    .padding(.horizontal, 30)
 
+                    // Error Message
                     if let errorMessage = errorMessage {
                         Text(errorMessage)
+                            .font(.footnote)
                             .foregroundColor(.red)
                             .padding()
                     }
+
+                    // Navigation to Sign Up
+                    Spacer()
+                    HStack {
+                        Text("Don't have an account?")
+                            .foregroundColor(.white)
+                        NavigationLink(destination: SignUpDetailsView()) {
+                            Text("Sign Up")
+                                .foregroundColor(.brown)
+                                .fontWeight(.bold)
+                        }
+                    }
+                    .padding(.top, 10)
+
+                    Spacer()
                 }
             }
         }

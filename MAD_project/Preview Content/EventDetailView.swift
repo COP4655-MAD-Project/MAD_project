@@ -5,75 +5,110 @@ struct EventDetailView: View {
     let event: Event
 
     @State private var remainingTime: String = ""
-    @State private var navigateTo: String? = nil // State to handle navigation
 
     var body: some View {
-        ZStack{
+        ZStack {
+            // Background gradient
             LinearGradient(
                 gradient: Gradient(colors: [Color(red: 0.96, green: 0.87, blue: 0.68), Color.brown]),
                 startPoint: .top,
                 endPoint: .bottom
             )
             .edgesIgnoringSafeArea(.all)
-            
-            VStack(spacing: 20) {
-                
+
+            VStack {
+                // Event Name
                 Text(event.name)
                     .font(.largeTitle)
-                    .padding()
-                
-                Text("Event Type: \(event.eventType)")
-                    .font(.title2)
-                
-                Text("Event Date: \(event.eventDate, formatter: dateFormatter)")
-                    .font(.title3)
-                
-                Text("Time Remaining: \(remainingTime)")
-                    .font(.headline)
-                    .foregroundColor(.blue)
-                    .onAppear {
-                        calculateRemainingTime()
-                    }
-                
-                // Navigation buttons
-                NavigationLink(destination: WeatherView(), tag: "Weather", selection: $navigateTo) {
-                    EmptyView()
+                    .bold()
+                    .foregroundColor(.white)
+                    .padding(.top, 40)
+
+                // Timer Section
+                VStack {
+                    Text("Time Remaining")
+                        .font(.title3)
+                        .foregroundColor(.white)
+                        .padding(.bottom, 5)
+
+                    Text(remainingTime)
+                        .font(.largeTitle)
+                        .bold()
+                        .foregroundColor(.blue)
+                        .onAppear {
+                            calculateRemainingTime()
+                        }
                 }
-                NavigationLink(destination: InvitationsView(), tag: "Invitations", selection: $navigateTo) {
-                    EmptyView()
-                }
-                NavigationLink(destination: FoodView(), tag: "FoodList", selection: $navigateTo) {
-                    EmptyView()
-                }
-                NavigationLink(destination: TasksView(), tag: "ToDoList", selection: $navigateTo) {
-                    EmptyView()
-                }
-                
-                Button("Check Weather") {
-                    navigateTo = "Weather"
-                }
-                .buttonStyle(.borderedProminent)
-                
-                Button("Manage Invitations") {
-                    navigateTo = "Invitations"
-                }
-                .buttonStyle(.borderedProminent)
-                
-                Button("Manage Food List") {
-                    navigateTo = "FoodList"
-                }
-                .buttonStyle(.borderedProminent)
-                
-                Button("To-Do List") {
-                    navigateTo = "ToDoList"
-                }
-                .buttonStyle(.borderedProminent)
-                
+                .padding(.top, 20)
+
                 Spacer()
+
+                // Bottom Buttons Section
+                HStack(spacing: 22) {
+                    NavigationLink(destination: WeatherView()) {
+                        VStack {
+                            Image(systemName: "cloud.sun.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(.white)
+                            Text("Weather")
+                                .font(.caption)
+                                .foregroundColor(.white)
+                        }
+                    }
+
+                    NavigationLink(destination: InvitationsView()) {
+                        VStack {
+                            Image(systemName: "person.3.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(.white)
+                            Text("Invites")
+                                .font(.caption)
+                                .foregroundColor(.white)
+                        }
+                    }
+
+                    NavigationLink(destination: FoodView()) {
+                        VStack {
+                            Image(systemName: "fork.knife")
+                                .font(.system(size: 24))
+                                .foregroundColor(.white)
+                            Text("Food List")
+                                .font(.caption)
+                                .foregroundColor(.white)
+                        }
+                    }
+
+                    NavigationLink(destination: TasksView()) {
+                        VStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(.white)
+                            Text("To-Do")
+                                .font(.caption)
+                                .foregroundColor(.white)
+                        }
+                    }
+
+                    NavigationLink(destination: CalendarView()) {
+                        VStack {
+                            Image(systemName: "calendar")
+                                .font(.system(size: 24))
+                                .foregroundColor(.white)
+                            Text("Calendar")
+                                .font(.caption)
+                                .foregroundColor(.white)
+                        }
+                    }
+                }
+                .padding()
+                .background(Color.brown.opacity(0.8))
+                .cornerRadius(15)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
             }
-            .padding()
         }
     }
+
     /// Calculate and display the remaining time until the event date
     private func calculateRemainingTime() {
         let now = Date()
@@ -86,18 +121,15 @@ struct EventDetailView: View {
             remainingTime = "Event has passed."
         }
     }
-
-    /// Date formatter for event date
-    private var dateFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        return formatter
-    }
 }
 
 #Preview {
-    let sampleEvent = Event(id: "1", name: "John's Birthday", eventType: "Birthday", eventDate: Date().addingTimeInterval(86400))
+    let sampleEvent = Event(
+        id: "1",
+        name: "John's Birthday",
+        eventType: "Birthday",
+        eventDate: Date().addingTimeInterval(86400)
+    )
     EventDetailView(event: sampleEvent)
         .environmentObject(AuthManager())
 }
