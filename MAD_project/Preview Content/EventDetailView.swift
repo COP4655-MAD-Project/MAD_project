@@ -22,11 +22,11 @@ struct EventDetailView: View {
                     .font(.largeTitle)
                     .bold()
                     .foregroundColor(.white)
-                    .padding(.top, 40)
+                    .padding(.top, 30)
 
                 // Timer Section
                 VStack {
-                    Text("Time Remaining")
+                    Text("Time Remaining:")
                         .font(.title3)
                         .foregroundColor(.white)
                         .padding(.bottom, 5)
@@ -34,69 +34,32 @@ struct EventDetailView: View {
                     Text(remainingTime)
                         .font(.largeTitle)
                         .bold()
-                        .foregroundColor(.blue)
+                        .foregroundColor(.black) // Updated color to black
                         .onAppear {
                             calculateRemainingTime()
                         }
                 }
-                .padding(.top, 20)
+                .padding(.top, 8)
 
                 Spacer()
 
-                // Bottom Buttons Section
-                HStack(spacing: 22) {
-                    NavigationLink(destination: WeatherView()) {
-                        VStack {
-                            Image(systemName: "cloud.sun.fill")
-                                .font(.system(size: 24))
-                                .foregroundColor(.white)
-                            Text("Weather")
-                                .font(.caption)
-                                .foregroundColor(.white)
+                // Buttons Section
+                VStack(spacing: 20) {
+                    HStack(spacing: 40) {
+                        NavigationLink(destination: WeatherView()) {
+                            ButtonView(icon: "cloud.sun.fill", label: "Weather")
+                        }
+                        NavigationLink(destination: InvitationsView()) {
+                            ButtonView(icon: "person.3.fill", label: "Invitations")
                         }
                     }
 
-                    NavigationLink(destination: InvitationsView()) {
-                        VStack {
-                            Image(systemName: "person.3.fill")
-                                .font(.system(size: 24))
-                                .foregroundColor(.white)
-                            Text("Invites")
-                                .font(.caption)
-                                .foregroundColor(.white)
+                    HStack(spacing: 40) {
+                        NavigationLink(destination: FoodView()) {
+                            ButtonView(icon: "fork.knife", label: "Food List")
                         }
-                    }
-
-                    NavigationLink(destination: FoodView()) {
-                        VStack {
-                            Image(systemName: "fork.knife")
-                                .font(.system(size: 24))
-                                .foregroundColor(.white)
-                            Text("Food List")
-                                .font(.caption)
-                                .foregroundColor(.white)
-                        }
-                    }
-
-                    NavigationLink(destination: TasksView()) {
-                        VStack {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 24))
-                                .foregroundColor(.white)
-                            Text("To-Do")
-                                .font(.caption)
-                                .foregroundColor(.white)
-                        }
-                    }
-
-                    NavigationLink(destination: CalendarView()) {
-                        VStack {
-                            Image(systemName: "calendar")
-                                .font(.system(size: 24))
-                                .foregroundColor(.white)
-                            Text("Calendar")
-                                .font(.caption)
-                                .foregroundColor(.white)
+                        NavigationLink(destination: TasksView()) {
+                            ButtonView(icon: "checkmark.circle.fill", label: "To-Do")
                         }
                     }
                 }
@@ -104,7 +67,8 @@ struct EventDetailView: View {
                 .background(Color.brown.opacity(0.8))
                 .cornerRadius(15)
                 .padding(.horizontal, 20)
-                .padding(.bottom, 20)
+
+                Spacer() // Ensure the buttons stay in the center
             }
         }
     }
@@ -120,6 +84,27 @@ struct EventDetailView: View {
         } else {
             remainingTime = "Event has passed."
         }
+    }
+}
+
+/// Reusable Button View
+struct ButtonView: View {
+    let icon: String
+    let label: String
+
+    var body: some View {
+        VStack {
+            Image(systemName: icon)
+                .font(.system(size: 40))
+                .foregroundColor(.white)
+            Text(label)
+                .font(.headline)
+                .foregroundColor(.white)
+        }
+        .frame(width: 120, height: 120)
+        .background(Color.brown.opacity(0.9))
+        .cornerRadius(15)
+        .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 3)
     }
 }
 

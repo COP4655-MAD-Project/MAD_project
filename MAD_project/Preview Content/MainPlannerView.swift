@@ -74,6 +74,25 @@ struct MainPlannerView: View {
                         }
                         .padding(.horizontal)
                     }
+
+                    Spacer()
+
+                    // Bottom Navigation to Calendar
+                    NavigationLink(destination: CalendarView().environmentObject(authManager)) {
+                        VStack {
+                            Image(systemName: "calendar.circle.fill")
+                                .font(.largeTitle)
+                                .foregroundColor(.white)
+                            Text("View Calendar")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                        }
+                        .padding()
+                        .background(Color.brown.opacity(0.8))
+                        .cornerRadius(10)
+                        .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 3)
+                    }
+                    .padding(.bottom, 20)
                 }
                 .sheet(isPresented: $isAddingEvent) {
                     AddEventView()

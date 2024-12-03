@@ -1,12 +1,13 @@
 import SwiftUI
 
 struct CalendarView: View {
+    @EnvironmentObject var authManager: AuthManager
     @State private var selectedDate: Date = Date()
-    @State private var events: [String] = []
+    @State private var dailyEvents: [Event] = []
 
     var body: some View {
         ZStack {
-            GradientBackground() // Use the reusable gradient background
+            GradientBackground() // Reusable gradient background
 
             VStack {
                 // Calendar Picker
@@ -29,34 +30,27 @@ struct CalendarView: View {
 
                 // Events Section
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Events")
+                    Text("Events on \(formattedDate(selectedDate))")
                         .font(.headline)
                         .padding(.bottom, 5)
                         .foregroundColor(.black)
 
-                    if events.isEmpty {
+                    if dailyEvents.isEmpty {
                         Text("No events for the selected date.")
                             .foregroundColor(.gray)
                             .italic()
                     } else {
-                        List(events, id: \.self) { event in
-                            Text(event)
-                                .foregroundColor(.black)
+                        List(dailyEvents, id: \.id) { event in
+                            VStack(alignment: .leading) {
+                                Text(event.name)
+                                    .font(.headline)
+                                Text("Type: \(event.eventType)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.gray)
+                            }
                         }
                         .listStyle(.plain)
                         .background(Color.clear)
-                    }
-
-                    // Add Event Button
-                    Button(action: {
-                        addEvent()
-                    }) {
-                        Text("Add Event")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.green)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
                     }
                 }
                 .padding()
@@ -74,26 +68,13 @@ struct CalendarView: View {
         .onAppear {
             loadEvents(for: selectedDate) // Load events on view load
         }
-        .navigationTitle("Calendar View")
+        .navigationTitle("Calendar")
     }
 
-    // Load events from UserDefaults
+    // Load events for the selected date
     private func loadEvents(for date: Date) {
-        let dateKey = formattedDate(date)
-        if let savedEvents = UserDefaults.standard.array(forKey: dateKey) as? [String] {
-            events = savedEvents
-        } else {
-            events = []
-        }
-    }
-
-    // Add an event for the selected date
-    private func addEvent() {
-        let newEvent = "Event \(events.count + 1)"
-        events.append(newEvent)
-
-        let dateKey = formattedDate(selectedDate)
-        UserDefaults.standard.set(events, forKey: dateKey)
+        let formatted = formattedDate(date)
+        dailyEvents = authManager.userEvents.filter { formattedDate($0.eventDate) == formatted }
     }
 
     // Format date to "yyyy-MM-dd"
@@ -117,5 +98,11 @@ struct GradientBackground: View {
 }
 
 #Preview {
-    CalendarView()
+    let mockAuthManager = AuthManager()
+    mockAuthManager.userEvents = [
+        Event(id: "1", name: "Birthday Party", eventType: "Birthday", eventDate: Date()),
+        Event(id: "2", name: "Meeting", eventType: "Work", eventDate: Date().addingTimeInterval(86400))
+    ]
+    return CalendarView()
+        .environmentObject(mockAuthManager)
 }
