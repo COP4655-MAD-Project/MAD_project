@@ -55,10 +55,10 @@ struct EventDetailView: View {
                     }
 
                     HStack(spacing: 40) {
-                        NavigationLink(destination: FoodView()) {
+                        NavigationLink(destination: FoodView(currentEventId: event.id, authManager: authManager)) {
                             ButtonView(icon: "fork.knife", label: "Food List")
                         }
-                        NavigationLink(destination: TasksView()) {
+                        NavigationLink(destination: TasksView(currentEventId: event.id, authManager: authManager)) {
                             ButtonView(icon: "checkmark.circle.fill", label: "To-Do")
                         }
                     }

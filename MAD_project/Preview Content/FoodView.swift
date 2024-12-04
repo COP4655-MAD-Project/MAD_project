@@ -19,6 +19,8 @@ struct FoodView: View {
     @State private var isAddingFood: Bool = false
     @State private var newFoodName: String = ""
     
+    let currentEventId: String
+    @ObservedObject var authManager: AuthManager // Reference to AuthManager to get current user's event
     private let db = Firestore.firestore() // Firestore instance
 
     var body: some View {
@@ -174,7 +176,8 @@ struct FoodView: View {
         let foodRef = db.collection("foodItems").document(foodItem.id.uuidString)
         let foodData: [String: Any] = [
             "foodName": foodItem.name,
-            "completedBool": foodItem.isCompleted
+            "completedBool": foodItem.isCompleted,
+            "eventId": currentEventId // Use the passed event ID
         ]
         foodRef.setData(foodData) { error in
             if let error = error {
@@ -189,27 +192,30 @@ struct FoodView: View {
 
     // Fetch food items from Firestore
     private func fetchFoodItems() {
-        db.collection("foodItems").getDocuments { snapshot, error in
-            if let error = error {
-                print("Error fetching food items: \(error.localizedDescription)")
-                return
-            }
+        db.collection("foodItems")
+            .whereField("eventId", isEqualTo: currentEventId) // Filter by the passed event ID
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching food items: \(error.localizedDescription)")
+                    return
+                }
 
-            guard let documents = snapshot?.documents else { return }
-            DispatchQueue.main.async {
-                foodList = documents.compactMap { doc in
-                    let data = doc.data()
-                    guard
-                        let foodName = data["foodName"] as? String,
-                        let completedBool = data["completedBool"] as? Bool
-                    else {
-                        return nil
+                guard let documents = snapshot?.documents else { return }
+                DispatchQueue.main.async {
+                    foodList = documents.compactMap { doc in
+                        let data = doc.data()
+                        guard
+                            let foodName = data["foodName"] as? String,
+                            let completedBool = data["completedBool"] as? Bool
+                        else {
+                            return nil
+                        }
+                        return FoodItem(name: foodName, isCompleted: completedBool)
                     }
-                    return FoodItem(name: foodName, isCompleted: completedBool)
                 }
             }
-        }
     }
+
 
     // Update food completion status
     private func updateFoodCompletion(_ foodItem: FoodItem) {
@@ -237,8 +243,5 @@ struct FoodView: View {
 }
 
 #Preview {
-    FoodView()
+    FoodView(currentEventId: "sampleEventId", authManager: AuthManager())
 }
-
-
-

@@ -8,16 +8,19 @@
 import SwiftUI
 import FirebaseFirestore
 
-struct TodoTask: Identifiable {
-    let id: String
+struct TaskItem: Identifiable {
+    let id = UUID()
     var name: String
     var isCompleted: Bool = false
 }
 
 struct TasksView: View {
-    @State private var tasks: [TodoTask] = []
-    @State private var newTaskName: String = ""
+    @State private var taskList: [TaskItem] = []
     @State private var isAddingTask: Bool = false
+    @State private var newTaskName: String = ""
+    
+    let currentEventId: String
+    @ObservedObject var authManager: AuthManager
     private let db = Firestore.firestore()
 
     var body: some View {
@@ -101,30 +104,30 @@ struct TasksView: View {
 
                     // List of tasks
                     List {
-                        ForEach($tasks) { $task in
+                        ForEach($taskList) { $taskItem in
                             VStack {
                                 HStack {
-                                    Text(task.name)
+                                    Text(taskItem.name)
                                         .font(.system(size: 20, weight: .bold))
-                                        .strikethrough(task.isCompleted, color: .gray)
-                                        .foregroundColor(task.isCompleted ? .gray : .black)
+                                        .strikethrough(taskItem.isCompleted, color: .gray)
+                                        .foregroundColor(taskItem.isCompleted ? .gray : .black)
 
                                     Spacer()
 
                                     Button(action: {
-                                        task.isCompleted.toggle()
-                                        updateTask(task)
+                                        taskItem.isCompleted.toggle()
+                                        updateTaskCompletion(taskItem)
                                     }) {
                                         ZStack {
                                             Circle()
                                                 .frame(width: 30, height: 30)
-                                                .foregroundColor(task.isCompleted ? .green : .white)
+                                                .foregroundColor(taskItem.isCompleted ? .green : .white)
                                                 .overlay(
                                                     Circle()
                                                         .stroke(Color.black, lineWidth: 2)
                                                 )
 
-                                            if task.isCompleted {
+                                            if taskItem.isCompleted {
                                                 Image(systemName: "checkmark")
                                                     .foregroundColor(.white)
                                                     .font(.system(size: 18))
@@ -149,81 +152,92 @@ struct TasksView: View {
                 .padding()
             }
         }
-        .onAppear(perform: fetchTasks)
+        .onAppear(perform: fetchTaskItems)
     }
 
     // Add a new task
     private func addTask() {
         guard !newTaskName.isEmpty else { return }
-        let newTaskID = UUID().uuidString
-        let newTask = TodoTask(id: newTaskID, name: newTaskName)
-        
-        tasks.append(newTask)
-        saveTask(newTask)
+        let newTaskItem = TaskItem(name: newTaskName)
+        saveTaskToFirestore(newTaskItem)
         newTaskName = ""
         withAnimation {
             isAddingTask = false
         }
     }
 
-    // Save a task to Firestore
-    private func saveTask(_ task: TodoTask) {
-        db.collection("tasks").document(task.id).setData([
-            "name": task.name,
-            "isCompleted": task.isCompleted
-        ]) { error in
+    // Save new task to Firestore
+    private func saveTaskToFirestore(_ taskItem: TaskItem) {
+        let taskRef = db.collection("tasks").document(taskItem.id.uuidString)
+        let taskData: [String: Any] = [
+            "taskName": taskItem.name,
+            "completedBool": taskItem.isCompleted,
+            "eventId": currentEventId // Use the passed event ID
+        ]
+        taskRef.setData(taskData) { error in
             if let error = error {
-                print("Error saving task: \(error.localizedDescription)")
-            }
-        }
-    }
-
-    // Update a task in Firestore
-    private func updateTask(_ task: TodoTask) {
-        db.collection("tasks").document(task.id).updateData([
-            "isCompleted": task.isCompleted
-        ]) { error in
-            if let error = error {
-                print("Error updating task: \(error.localizedDescription)")
-            }
-        }
-    }
-
-    // Fetch tasks from Firestore
-    private func fetchTasks() {
-        db.collection("tasks").getDocuments { snapshot, error in
-            if let error = error {
-                print("Error fetching tasks: \(error.localizedDescription)")
-                return
-            }
-
-            guard let documents = snapshot?.documents else { return }
-            tasks = documents.map { doc in
-                let data = doc.data()
-                return TodoTask(
-                    id: doc.documentID,
-                    name: data["name"] as? String ?? "",
-                    isCompleted: data["isCompleted"] as? Bool ?? false
-                )
-            }
-        }
-    }
-
-    // Delete a task
-    private func deleteTask(at offsets: IndexSet) {
-        let idsToDelete = offsets.map { tasks[$0].id }
-        idsToDelete.forEach { id in
-            db.collection("tasks").document(id).delete { error in
-                if let error = error {
-                    print("Error deleting task: \(error.localizedDescription)")
+                print("Error saving task to Firestore: \(error.localizedDescription)")
+            } else {
+                DispatchQueue.main.async {
+                    taskList.append(taskItem)
                 }
             }
         }
-        tasks.remove(atOffsets: offsets)
+    }
+
+    // Fetch task items from Firestore
+    private func fetchTaskItems() {
+        db.collection("tasks")
+            .whereField("eventId", isEqualTo: currentEventId) // Filter by the passed event ID
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching task items: \(error.localizedDescription)")
+                    return
+                }
+
+                guard let documents = snapshot?.documents else { return }
+                DispatchQueue.main.async {
+                    taskList = documents.compactMap { doc in
+                        let data = doc.data()
+                        guard
+                            let taskName = data["taskName"] as? String,
+                            let completedBool = data["completedBool"] as? Bool
+                        else {
+                            return nil
+                        }
+                        return TaskItem(name: taskName, isCompleted: completedBool)
+                    }
+                }
+            }
+    }
+
+
+    // Update task completion status
+    private func updateTaskCompletion(_ taskItem: TaskItem) {
+        let taskRef = db.collection("tasks").document(taskItem.id.uuidString)
+        taskRef.updateData(["completedBool": taskItem.isCompleted]) { error in
+            if let error = error {
+                print("Error updating task completion status: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    // Delete a task item
+    private func deleteTask(at offsets: IndexSet) {
+        offsets.forEach { index in
+            let taskItem = taskList[index]
+            let taskRef = db.collection("tasks").document(taskItem.id.uuidString)
+            taskRef.delete { error in
+                if let error = error {
+                    print("Error deleting task item: \(error.localizedDescription)")
+                }
+            }
+        }
+        taskList.remove(atOffsets: offsets)
     }
 }
 
 #Preview {
-    TasksView()
+    TasksView(currentEventId: "123", authManager: AuthManager())
 }
 
