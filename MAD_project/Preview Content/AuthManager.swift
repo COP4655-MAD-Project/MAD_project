@@ -1,6 +1,3 @@
-//AuthManager
-
-
 import Foundation
 import FirebaseAuth
 import FirebaseFirestore
@@ -8,7 +5,7 @@ import FirebaseFirestore
 class AuthManager: ObservableObject {
     @Published var user: User?
     @Published var isSignedIn: Bool = false
-    @Published var userEvents: [Event] = [] // Store events for the user
+    @Published var userEvents: [Event] = []
 
     private var handle: AuthStateDidChangeListenerHandle?
     private let db = Firestore.firestore()
@@ -19,7 +16,7 @@ class AuthManager: ObservableObject {
                 self?.user = user
                 self?.isSignedIn = user != nil
                 if let user = user {
-                    self?.fetchUserEvents(userId: user.uid) // Fetch events when the user logs in
+                    self?.fetchUserEvents(userId: user.uid)
                 }
             }
         }
@@ -31,29 +28,13 @@ class AuthManager: ObservableObject {
         }
     }
 
-    // MARK: - User Authentication
 
-    func signUp(
-        email: String,
-        password: String,
-        name: String,
-        eventType: String,
-        eventDate: Date,
-        completion: @escaping (Result<Void, Error>) -> Void
-    ) {
+    func signUp(email: String, password: String, name: String, eventType: String, eventDate: Date, completion: @escaping (Result<Void, Error>) -> Void) {
         Task {
             do {
                 let authResult = try await Auth.auth().createUser(withEmail: email, password: password)
-                DispatchQueue.main.async {
-                    self.user = authResult.user
-                }
-                saveUserDetails(
-                    userId: authResult.user.uid,
-                    email: email,
-                    name: name,
-                    eventType: eventType,
-                    eventDate: eventDate
-                )
+                DispatchQueue.main.async { self.user = authResult.user }
+                saveUserDetails(userId: authResult.user.uid, email: email, name: name, eventType: eventType, eventDate: eventDate)
                 completion(.success(()))
             } catch {
                 completion(.failure(error))
@@ -65,9 +46,7 @@ class AuthManager: ObservableObject {
         Task {
             do {
                 let authResult = try await Auth.auth().signIn(withEmail: email, password: password)
-                DispatchQueue.main.async {
-                    self.user = authResult.user
-                }
+                DispatchQueue.main.async { self.user = authResult.user }
                 completion(.success(()))
             } catch {
                 completion(.failure(error))
@@ -80,22 +59,17 @@ class AuthManager: ObservableObject {
             try Auth.auth().signOut()
             DispatchQueue.main.async {
                 self.user = nil
-                self.userEvents = [] // Clear events on sign out
+                self.userEvents = []
             }
         } catch {
             print("Sign out failed: \(error)")
         }
     }
 
-    // MARK: - Firestore Interaction
-
-    private func saveUserDetails(
-        userId: String,
-        email: String,
-        name: String,
-        eventType: String,
-        eventDate: Date
-    ) {
+    
+    
+    
+    private func saveUserDetails(userId: String, email: String, name: String, eventType: String, eventDate: Date) {
         let userRef = db.collection("users").document(userId)
         let userData: [String: Any] = [
             "email": email,
@@ -105,9 +79,7 @@ class AuthManager: ObservableObject {
         ]
         userRef.setData(userData) { error in
             if let error = error {
-                print("Error saving user details to Firestore: \(error.localizedDescription)")
-            } else {
-                print("User details saved successfully to Firestore")
+                print("Error saving user details: \(error.localizedDescription)")
             }
         }
     }
@@ -135,48 +107,116 @@ class AuthManager: ObservableObject {
         }
     }
 
-    func addEvent(userId: String, event: Event, completion: @escaping (Result<Void, Error>) -> Void) {
-        let eventRef = db.collection("users").document(userId).collection("events").document()
-
-        let eventData: [String: Any] = [
-            "name": event.name,
-            "eventType": event.eventType,
-            "eventDate": event.eventDate
-        ]
-
-        eventRef.setData(eventData) { error in
+    func fetchEventInvitations(userId: String, eventId: String, completion: @escaping ([Guest]) -> Void) {
+        db.collection("users").document(userId).collection("events").document(eventId).collection("invitations").getDocuments { snapshot, error in
             if let error = error {
-                completion(.failure(error))
+                print("Error fetching invitations: \(error.localizedDescription)")
+                completion([])
                 return
             }
-            DispatchQueue.main.async {
-                self.userEvents.append(Event(id: eventRef.documentID, name: event.name, eventType: event.eventType, eventDate: event.eventDate))
+
+            let guests: [Guest] = snapshot?.documents.compactMap { doc in
+                let data = doc.data()
+                guard
+                    let name = data["name"] as? String,
+                    let statusString = data["status"] as? String,
+                    let status = GuestStatus(rawValue: statusString)
+                else {
+                    return nil
+                }
+                return Guest(name: name, status: status)
+            } ?? []
+            
+            completion(guests)
+        }
+    }
+
+    func saveEventInvitations(userId: String, eventId: String, guests: [Guest], completion: @escaping (Result<Void, Error>) -> Void) {
+        let batch = db.batch()
+        let invitationsRef = db.collection("users").document(userId).collection("events").document(eventId).collection("invitations")
+
+        guests.forEach { guest in
+            let guestRef = invitationsRef.document(guest.id.uuidString)
+            let data: [String: Any] = [
+                "name": guest.name,
+                "status": guest.status.rawValue
+            ]
+            batch.setData(data, forDocument: guestRef)
+        }
+
+        batch.commit { error in
+            if let error = error {
+                completion(.failure(error))
+            } else {
                 completion(.success(()))
             }
         }
     }
     
+    
+    func addEvent(userId: String, event: Event, completion: @escaping (Result<Void, Error>) -> Void) {
+        let eventRef = db.collection("users").document(userId).collection("events").document(event.id)
+        
+        let eventData: [String: Any] = [
+            "name": event.name,
+            "eventType": event.eventType,
+            "eventDate": event.eventDate
+        ]
+        
+        eventRef.setData(eventData) { error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self.userEvents.append(event)
+                completion(.success(()))
+            }
+        }
+    }
+
+    
     func deleteEvent(userId: String, event: Event, completion: @escaping (Result<Void, Error>) -> Void) {
         let eventRef = db.collection("users").document(userId).collection("events").document(event.id)
-
-        eventRef.delete { error in
+        
+        // First delete all invitations in the subcollection
+        eventRef.collection("invitations").getDocuments { snapshot, error in
             if let error = error {
                 completion(.failure(error))
                 return
             }
 
-            DispatchQueue.main.async {
-                // Remove the event locally from userEvents
-                if let index = self.userEvents.firstIndex(where: { $0.id == event.id }) {
-                    self.userEvents.remove(at: index)
+            let batch = self.db.batch()
+            
+            snapshot?.documents.forEach { document in
+                batch.deleteDocument(document.reference)
+            }
+            
+            batch.commit { error in
+                if let error = error {
+                    completion(.failure(error))
+                    return
                 }
-                completion(.success(()))
+
+                // Now delete the event itself
+                eventRef.delete { error in
+                    if let error = error {
+                        completion(.failure(error))
+                    } else {
+                        DispatchQueue.main.async {
+                            // Update local state
+                            self.userEvents.removeAll { $0.id == event.id }
+                            completion(.success(()))
+                        }
+                    }
+                }
             }
         }
     }
+    
 }
 
-// MARK: - Event Model
 
 struct Event: Identifiable, Hashable {
     let id: String
@@ -192,3 +232,17 @@ struct Event: Identifiable, Hashable {
         lhs.id == rhs.id
     }
 }
+
+
+struct Guest: Identifiable {
+    let id = UUID()
+    var name: String
+    var status: GuestStatus
+}
+
+enum GuestStatus: String, CaseIterable {
+    case attending = "Attending"
+    case notAttending = "Not Attending"
+    case noAnswer = "N/A"
+}
+

@@ -173,3 +173,4 @@ struct EventCardView: View {
     return MainPlannerView()
         .environmentObject(sampleAuthManager)
 }
+

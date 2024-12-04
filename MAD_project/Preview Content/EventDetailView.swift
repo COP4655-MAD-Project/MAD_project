@@ -49,7 +49,7 @@ struct EventDetailView: View {
                         NavigationLink(destination: WeatherView()) {
                             ButtonView(icon: "cloud.sun.fill", label: "Weather")
                         }
-                        NavigationLink(destination: InvitationsView()) {
+                        NavigationLink(destination: InvitationsView(eventId: event.id)) {
                             ButtonView(icon: "person.3.fill", label: "Invitations")
                         }
                     }
