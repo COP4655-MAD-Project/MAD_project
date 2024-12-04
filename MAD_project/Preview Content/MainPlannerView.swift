@@ -66,9 +66,22 @@ struct MainPlannerView: View {
                                     .padding(.top, 50)
                             } else {
                                 ForEach(authManager.userEvents) { event in
-                                    NavigationLink(destination: EventDetailView(event: event)) {
-                                        EventCardView(event: event)
+                                    HStack {
+                                        NavigationLink(destination: EventDetailView(event: event)) {
+                                            EventCardView(event: event)
+                                        }
+                                        Spacer()
+                                        // Delete Button
+                                        Button(action: {
+                                            deleteEvent(event)
+                                        }) {
+                                            Image(systemName: "trash")
+                                                .foregroundColor(.red)
+                                                .padding()
+                                        }
+                                        .accessibilityLabel(Text("Delete \(event.name)"))
                                     }
+                                    .padding(.horizontal)
                                 }
                             }
                         }
@@ -104,6 +117,19 @@ struct MainPlannerView: View {
 
     private func signOut() {
         authManager.signOut()
+    }
+
+    private func deleteEvent(_ event: Event) {
+        guard let userId = authManager.user?.uid else { return }
+
+        authManager.deleteEvent(userId: userId, event: event) { result in
+            switch result {
+            case .success:
+                print("Event successfully deleted.")
+            case .failure(let error):
+                print("Error deleting event: \(error.localizedDescription)")
+            }
+        }
     }
 }
 

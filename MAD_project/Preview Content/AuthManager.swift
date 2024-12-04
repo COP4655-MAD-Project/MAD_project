@@ -155,6 +155,25 @@ class AuthManager: ObservableObject {
             }
         }
     }
+    
+    func deleteEvent(userId: String, event: Event, completion: @escaping (Result<Void, Error>) -> Void) {
+        let eventRef = db.collection("users").document(userId).collection("events").document(event.id)
+
+        eventRef.delete { error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+
+            DispatchQueue.main.async {
+                // Remove the event locally from userEvents
+                if let index = self.userEvents.firstIndex(where: { $0.id == event.id }) {
+                    self.userEvents.remove(at: index)
+                }
+                completion(.success(()))
+            }
+        }
+    }
 }
 
 // MARK: - Event Model
@@ -173,4 +192,3 @@ struct Event: Identifiable, Hashable {
         lhs.id == rhs.id
     }
 }
-

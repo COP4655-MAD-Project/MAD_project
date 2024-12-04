@@ -123,4 +123,11 @@ struct AddEventView: View {
         }
     }
 }
+
+struct AddEventView_Previews: PreviewProvider {
+    static var previews: some View {
+        AddEventView()
+            .environmentObject(AuthManager()) // Provide a mock or default AuthManager
+    }
+}
 // test
