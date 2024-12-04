@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 struct FoodItem: Identifiable {
     let id = UUID()
@@ -14,13 +15,11 @@ struct FoodItem: Identifiable {
 }
 
 struct FoodView: View {
-    @State private var foodList: [FoodItem] = [
-        FoodItem(name: "Pizza"),
-        FoodItem(name: "Ice Cream", isCompleted: true),
-        FoodItem(name: "Salad")
-    ]
+    @State private var foodList: [FoodItem] = []
     @State private var isAddingFood: Bool = false
     @State private var newFoodName: String = ""
+    
+    private let db = Firestore.firestore() // Firestore instance
 
     var body: some View {
         NavigationStack {
@@ -120,6 +119,7 @@ struct FoodView: View {
                                     // Custom bubble for food completion
                                     Button(action: {
                                         foodItem.isCompleted.toggle()
+                                        updateFoodCompletion(foodItem)
                                     }) {
                                         ZStack {
                                             Circle()
@@ -153,6 +153,7 @@ struct FoodView: View {
                     Spacer()
                 }
                 .padding()
+                .onAppear(perform: fetchFoodItems)
             }
         }
     }
@@ -161,15 +162,76 @@ struct FoodView: View {
     private func addFood() {
         guard !newFoodName.isEmpty else { return }
         let newFoodItem = FoodItem(name: newFoodName)
-        foodList.append(newFoodItem)
+        saveFoodToFirestore(newFoodItem)
         newFoodName = ""
         withAnimation {
             isAddingFood = false
         }
     }
 
+    // Save new food to Firestore
+    private func saveFoodToFirestore(_ foodItem: FoodItem) {
+        let foodRef = db.collection("foodItems").document(foodItem.id.uuidString)
+        let foodData: [String: Any] = [
+            "foodName": foodItem.name,
+            "completedBool": foodItem.isCompleted
+        ]
+        foodRef.setData(foodData) { error in
+            if let error = error {
+                print("Error saving food to Firestore: \(error.localizedDescription)")
+            } else {
+                DispatchQueue.main.async {
+                    foodList.append(foodItem)
+                }
+            }
+        }
+    }
+
+    // Fetch food items from Firestore
+    private func fetchFoodItems() {
+        db.collection("foodItems").getDocuments { snapshot, error in
+            if let error = error {
+                print("Error fetching food items: \(error.localizedDescription)")
+                return
+            }
+
+            guard let documents = snapshot?.documents else { return }
+            DispatchQueue.main.async {
+                foodList = documents.compactMap { doc in
+                    let data = doc.data()
+                    guard
+                        let foodName = data["foodName"] as? String,
+                        let completedBool = data["completedBool"] as? Bool
+                    else {
+                        return nil
+                    }
+                    return FoodItem(name: foodName, isCompleted: completedBool)
+                }
+            }
+        }
+    }
+
+    // Update food completion status
+    private func updateFoodCompletion(_ foodItem: FoodItem) {
+        let foodRef = db.collection("foodItems").document(foodItem.id.uuidString)
+        foodRef.updateData(["completedBool": foodItem.isCompleted]) { error in
+            if let error = error {
+                print("Error updating food completion status: \(error.localizedDescription)")
+            }
+        }
+    }
+
     // Delete a food item
     private func deleteFood(at offsets: IndexSet) {
+        offsets.forEach { index in
+            let foodItem = foodList[index]
+            let foodRef = db.collection("foodItems").document(foodItem.id.uuidString)
+            foodRef.delete { error in
+                if let error = error {
+                    print("Error deleting food item: \(error.localizedDescription)")
+                }
+            }
+        }
         foodList.remove(atOffsets: offsets)
     }
 }
@@ -177,5 +239,6 @@ struct FoodView: View {
 #Preview {
     FoodView()
 }
+
 
 

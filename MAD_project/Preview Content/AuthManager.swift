@@ -173,3 +173,4 @@ struct Event: Identifiable, Hashable {
         lhs.id == rhs.id
     }
 }
+

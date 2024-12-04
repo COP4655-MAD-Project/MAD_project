@@ -6,22 +6,19 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 struct TodoTask: Identifiable {
-    let id = UUID()
+    let id: String
     var name: String
-    var isCompleted: Bool = false // Default value
+    var isCompleted: Bool = false
 }
 
 struct TasksView: View {
-    @State private var tasks: [TodoTask] = [
-        TodoTask(name: "Buy plates"),
-        TodoTask(name: "Pick DJ", isCompleted: true),
-        TodoTask(name: "Send Invites")
-    ]
+    @State private var tasks: [TodoTask] = []
     @State private var newTaskName: String = ""
     @State private var isAddingTask: Bool = false
-    @State private var newEventName: String = ""
+    private let db = Firestore.firestore()
 
     var body: some View {
         NavigationStack {
@@ -36,13 +33,13 @@ struct TasksView: View {
 
                 VStack {
                     HStack {
-                        // For text allignment
                         Spacer()
                         Spacer()
                         Spacer()
                         Spacer()
                         Spacer()
                         Spacer()
+
                         // Title
                         Text("To Do")
                             .font(.system(size: 50, weight: .regular, design: .serif))
@@ -64,7 +61,7 @@ struct TasksView: View {
                     // If adding a task, show a text box
                     if isAddingTask {
                         VStack {
-                            TextField("New Event", text: $newEventName)
+                            TextField("New Task", text: $newTaskName)
                                 .padding()
                                 .background(Color.white)
                                 .cornerRadius(10)
@@ -76,7 +73,7 @@ struct TasksView: View {
                                 .padding()
 
                             HStack {
-                                Button(action: addEvent) {
+                                Button(action: addTask) {
                                     Text("Submit")
                                         .font(.headline)
                                         .padding()
@@ -107,10 +104,8 @@ struct TasksView: View {
                         ForEach($tasks) { $task in
                             VStack {
                                 HStack {
-                                    // Task name
                                     Text(task.name)
                                         .font(.system(size: 20, weight: .bold))
-                                        .font(.headline)
                                         .strikethrough(task.isCompleted, color: .gray)
                                         .foregroundColor(task.isCompleted ? .gray : .black)
 
@@ -118,6 +113,7 @@ struct TasksView: View {
 
                                     Button(action: {
                                         task.isCompleted.toggle()
+                                        updateTask(task)
                                     }) {
                                         ZStack {
                                             Circle()
@@ -153,21 +149,76 @@ struct TasksView: View {
                 .padding()
             }
         }
+        .onAppear(perform: fetchTasks)
     }
 
-    // Add a new task (event)
-    private func addEvent() {
-        guard !newEventName.isEmpty else { return }
-        let newTask = TodoTask(name: newEventName)
+    // Add a new task
+    private func addTask() {
+        guard !newTaskName.isEmpty else { return }
+        let newTaskID = UUID().uuidString
+        let newTask = TodoTask(id: newTaskID, name: newTaskName)
+        
         tasks.append(newTask)
-        newEventName = ""
+        saveTask(newTask)
+        newTaskName = ""
         withAnimation {
             isAddingTask = false
         }
     }
 
+    // Save a task to Firestore
+    private func saveTask(_ task: TodoTask) {
+        db.collection("tasks").document(task.id).setData([
+            "name": task.name,
+            "isCompleted": task.isCompleted
+        ]) { error in
+            if let error = error {
+                print("Error saving task: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    // Update a task in Firestore
+    private func updateTask(_ task: TodoTask) {
+        db.collection("tasks").document(task.id).updateData([
+            "isCompleted": task.isCompleted
+        ]) { error in
+            if let error = error {
+                print("Error updating task: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    // Fetch tasks from Firestore
+    private func fetchTasks() {
+        db.collection("tasks").getDocuments { snapshot, error in
+            if let error = error {
+                print("Error fetching tasks: \(error.localizedDescription)")
+                return
+            }
+
+            guard let documents = snapshot?.documents else { return }
+            tasks = documents.map { doc in
+                let data = doc.data()
+                return TodoTask(
+                    id: doc.documentID,
+                    name: data["name"] as? String ?? "",
+                    isCompleted: data["isCompleted"] as? Bool ?? false
+                )
+            }
+        }
+    }
+
     // Delete a task
     private func deleteTask(at offsets: IndexSet) {
+        let idsToDelete = offsets.map { tasks[$0].id }
+        idsToDelete.forEach { id in
+            db.collection("tasks").document(id).delete { error in
+                if let error = error {
+                    print("Error deleting task: \(error.localizedDescription)")
+                }
+            }
+        }
         tasks.remove(atOffsets: offsets)
     }
 }
@@ -175,3 +226,4 @@ struct TasksView: View {
 #Preview {
     TasksView()
 }
+
