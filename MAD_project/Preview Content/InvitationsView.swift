@@ -1,9 +1,3 @@
-//
-//  InvitationsView.swift
-//  MAD_project
-//
-//  Created by Angelo Magarelli on 11/25/24.
-//
 import SwiftUI
 import Firebase
 
@@ -11,150 +5,156 @@ struct InvitationsView: View {
     @EnvironmentObject var authManager: AuthManager
     @State private var guestList: [Guest] = []
     @State private var newGuest: String = ""
-    
-    private let db = Firestore.firestore()
+    let eventId: String 
+
+    var totalAttending: Int {
+        guestList.filter { $0.status == .attending }.count
+    }
+
+    var groupedGuests: [GuestStatus: [Guest]] {
+        Dictionary(grouping: guestList, by: { $0.status })
+    }
 
     var body: some View {
-        ZStack {
-            LinearGradient(
-                gradient: Gradient(colors: [Color(red: 0.96, green: 0.87, blue: 0.68), Color.brown]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .edgesIgnoringSafeArea(.all)
+        NavigationStack {
+            ZStack {
+                // Background gradient
+                LinearGradient(
+                    gradient: Gradient(colors: [Color(red: 0.96, green: 0.87, blue: 0.68), Color.brown]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .edgesIgnoringSafeArea(.all)
 
-            VStack(spacing: 20) {
-                Text("Manage Invitations")
-                    .font(.largeTitle)
-                    .bold()
-                    .foregroundColor(.white)
+                VStack(spacing: 20) {
+                    // Header
+                    VStack(spacing: 5) {
+                        Text("Manage Invitations")
+                            .font(.largeTitle)
+                            .bold()
+                            .foregroundColor(.white)
+
+                        Text("Total Guests Attending: \(totalAttending)")
+                            .font(.headline)
+                            .foregroundColor(.white.opacity(0.9))
+
+                        Text("Total Guests: \(guestList.count)")
+                            .font(.subheadline)
+                            .foregroundColor(.white.opacity(0.8))
+                    }
                     .padding(.top, 20)
 
-                Text("Total Invited: \(guestList.count)")
-                    .font(.headline)
-                    .foregroundColor(.white.opacity(0.9))
+                    if guestList.isEmpty {
+                        Text("No guests invited yet!")
+                            .font(.subheadline)
+                            .italic()
+                            .foregroundColor(.white.opacity(0.7))
+                            .padding(.top, 20)
+                    } else {
+                        ScrollView {
+                            VStack(spacing: 15) {
+                                ForEach(GuestStatus.allCases, id: \.self) { status in
+                                    if let guests = groupedGuests[status], !guests.isEmpty {
+                                        Section(header: Text(status.rawValue)
+                                            .font(.headline)
+                                            .foregroundColor(.white.opacity(0.8))
+                                            .padding(.leading)) {
+                                            ForEach(guests) { guest in
+                                                HStack {
+                                                    Text(guest.name)
+                                                        .font(.body)
+                                                        .foregroundColor(.brown)
+                                                        .padding(.leading)
 
-                if guestList.isEmpty {
-                    Text("No guests invited yet!")
-                        .font(.subheadline)
-                        .italic()
-                        .foregroundColor(.white.opacity(0.7))
-                        .padding(.top, 20)
-                } else {
-                    ScrollView {
-                        ForEach(GuestStatus.allCases, id: \.self) { status in
-                            Section(header: Text(status.rawValue)
-                                        .font(.headline)
-                                        .foregroundColor(.white.opacity(0.8))
-                                        .padding(.leading)
-                            ) {
-                                ForEach(guestList.filter { $0.status == status }) { guest in
-                                    HStack {
-                                        Text(guest.name)
-                                            .font(.body)
-                                            .foregroundColor(.brown)
-                                            .padding(.leading)
-                                        
-                                        Spacer()
+                                                    Spacer()
 
-                                        Picker("", selection: Binding<GuestStatus>(
-                                            get: { guest.status },
-                                            set: { newStatus in
-                                                updateGuestStatus(guest, to: newStatus)
-                                            }
-                                        )) {
-                                            ForEach(GuestStatus.allCases, id: \.self) { status in
-                                                Text(status.rawValue)
-                                                    .font(.system(size: 14, weight: .regular)) // Font adjustments
-                                                    .foregroundColor(.black) // Ensure contrast
-                                                    .tag(status)
-                                            }
-                                        }
-                                        .pickerStyle(MenuPickerStyle())
-                                        .frame(width: 120) // Make the dropdown smaller
-                                        .padding(5)
-                                        .background(Color.white.opacity(0.8))
-                                        .cornerRadius(8)
-                                        .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 3)
+                                                    Picker("", selection: Binding<GuestStatus>(
+                                                        get: { guest.status },
+                                                        set: { newStatus in
+                                                            updateGuestStatus(guest, to: newStatus)
+                                                        }
+                                                    )) {
+                                                        ForEach(GuestStatus.allCases, id: \.self) { status in
+                                                            Text(status.rawValue)
+                                                        }
+                                                    }
+                                                    .pickerStyle(MenuPickerStyle())
+                                                    .frame(width: 120)
+                                                    .padding(5)
+                                                    .background(Color.white.opacity(0.8))
+                                                    .cornerRadius(8)
+                                                    .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 3)
 
-                                        Button(action: {
-                                            deleteGuest(guest)
-                                        }) {
-                                            Image(systemName: "trash.fill")
-                                                .foregroundColor(.red)
-                                                .padding(10)
-                                                .background(Color.white.opacity(0.8))
-                                                .clipShape(Circle())
+                                                    Button(action: {
+                                                        deleteGuest(guest)
+                                                    }) {
+                                                        Image(systemName: "trash.fill")
+                                                            .foregroundColor(.red)
+                                                            .padding(10)
+                                                            .background(Color.white.opacity(0.8))
+                                                            .clipShape(Circle())
+                                                            .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 3)
+                                                    }
+                                                }
+                                                .frame(maxWidth: .infinity)
+                                                .background(
+                                                    RoundedRectangle(cornerRadius: 10)
+                                                        .fill(Color.white.opacity(0.9))
+                                                )
                                                 .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 3)
+                                                .padding(.horizontal)
+                                            }
                                         }
+                                        .padding(.bottom, 10)
                                     }
-                                    .frame(maxWidth: .infinity)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .fill(Color.white.opacity(0.9))
-                                    )
-                                    .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 3)
-                                    .padding(.horizontal)
                                 }
                             }
                         }
                     }
-                    .padding(.bottom)
-                }
 
-                Spacer()
+                    Spacer()
 
-                HStack {
-                    TextField("Enter Guest Name", text: $newGuest)
-                        .padding()
-                        .background(Color.white.opacity(0.8))
-                        .cornerRadius(8)
-                        .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 3)
-
-                    Button(action: addGuest) {
-                        Text("Add")
-                            .font(.headline)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 10)
-                            .background(Color.blue)
-                            .foregroundColor(.white)
+                    // Add New Guest Section
+                    HStack {
+                        TextField("Enter Guest Name", text: $newGuest)
+                            .padding()
+                            .background(Color.white.opacity(0.8))
                             .cornerRadius(8)
-                            .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 3)
+                            .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 3)
+
+                        Button(action: addGuest) {
+                            Text("Add")
+                                .font(.headline)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 10)
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                                .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 3)
+                        }
                     }
+                    .padding()
+                    .background(Color.white.opacity(0.2))
                 }
-                .padding()
-                .background(Color.white.opacity(0.2))
+                .padding(.horizontal)
             }
-            .padding(.horizontal)
         }
         .onAppear(perform: fetchGuests)
     }
 
+
     private func fetchGuests() {
-        guard let user = authManager.user else { return }
-        db.collection("invitations").document(user.uid).getDocument { (document, error) in
-            if let document = document, document.exists {
-                let data = document.data()?["guests"] as? [[String: Any]] ?? []
-                self.guestList = data.compactMap { dict in
-                    if let name = dict["name"] as? String,
-                       let statusString = dict["status"] as? String,
-                       let status = GuestStatus(rawValue: statusString) {
-                        return Guest(name: name, status: status)
-                    }
-                    return nil
-                }
-            } else {
-                print("No guest list found or error: \(String(describing: error))")
-            }
+        guard let userId = authManager.user?.uid else { return }
+        authManager.fetchEventInvitations(userId: userId, eventId: eventId) { guests in
+            guestList = guests
         }
     }
 
     private func saveGuests() {
-        guard let user = authManager.user else { return }
-        let guestData = guestList.map { ["name": $0.name, "status": $0.status.rawValue] }
-        db.collection("invitations").document(user.uid).setData(["guests": guestData]) { error in
-            if let error = error {
-                print("Error saving guest list: \(error)")
+        guard let userId = authManager.user?.uid else { return }
+        authManager.saveEventInvitations(userId: userId, eventId: eventId, guests: guestList) { result in
+            if case .failure(let error) = result {
+                print("Error saving guests: \(error.localizedDescription)")
             }
         }
     }
@@ -180,18 +180,11 @@ struct InvitationsView: View {
     }
 }
 
-struct Guest: Identifiable {
-    let id = UUID()
-    var name: String
-    var status: GuestStatus
-}
-
-enum GuestStatus: String, CaseIterable {
-    case attending = "Attending"
-    case notAttending = "Not Attending"
-    case noAnswer = "N/A"
-}
-
 #Preview {
-    InvitationsView().environmentObject(AuthManager())
+    let mockAuthManager = AuthManager()
+    mockAuthManager.userEvents = [
+        Event(id: "sampleEventId", name: "Sample Event", eventType: "Birthday", eventDate: Date())
+    ]
+    return InvitationsView(eventId: "sampleEventId")
+        .environmentObject(mockAuthManager)
 }
